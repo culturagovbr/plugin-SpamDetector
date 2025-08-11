@@ -70,6 +70,10 @@ class Plugin extends \MapasCulturais\Plugin
 
     public function _init()
     {
+        if(php_sapi_name() == "cli") {
+            return;
+        }
+
         $app = App::i();
         $plugin = $this;
 
@@ -212,8 +216,11 @@ class Plugin extends \MapasCulturais\Plugin
         $notification->user = $recipient->user;
         $notification->message = $message;
         $notification->save(true);
+
+        $locale = i::get_locale();
+        $template = "email-spam-{$locale}.html";
         
-        $filename = $app->view->resolveFilename("views/emails", "email-spam.html");
+        $filename = $app->view->resolveFilename("views/emails", $template);
         $template = file_get_contents($filename);
         
         $field_translations = [
@@ -477,11 +484,22 @@ class Plugin extends \MapasCulturais\Plugin
     /**
      * @return string Retorna uma string que representa o caminho do arquivo de configuração de termos
      */
-    public static function getPathFile() :string
+    public static function getPathFile(): string
     {
-        $file_path = __DIR__ . "/files";
+        $file_path = PRIVATE_FILES_PATH . "spamDetector";
         $file_name = 'terms-config.txt';
         $path = $file_path . '/' . $file_name;
+        $source_file = __DIR__ . '/files/' . $file_name;
+
+        // Verifica se o diretório existe, senão cria
+        if (!is_dir($file_path)) {
+            mkdir($file_path, 0777, true);
+        }
+
+        // Verifica se o arquivo não existe e copia do diretório de origem
+        if (!file_exists($path) && file_exists($source_file)) {
+            copy($source_file, $path);
+        }
 
         return $path;
     }
