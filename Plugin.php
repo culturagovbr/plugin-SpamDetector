@@ -91,9 +91,9 @@ class Plugin extends \MapasCulturais\Plugin
             }
         });
 
-        $app->hook('template(panel.<<*>>.panel-nav-left-sidebar):begin', function() use($app) {
+        $app->hook('template(<<*>>.<<*>>.panel-nav-left-sidebar):begin', function() use($app) {
             if($app->user->is('admin')) {
-                $this->part('configuration-menu');
+                $this->part('spam-detector-configuration-menu');
             }
         });
         
